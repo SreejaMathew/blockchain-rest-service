@@ -1,0 +1,23 @@
+{
+  "Fk1hPp2uAqQZLzVt5DqTj1Cq8Ae4VZB6L3v3A7mP3aY9": {
+    "blockchain": "solana",
+    "instance": "solana-devnet",
+    "rpc": "https://api.devnet.solana.com"
+  },
+  "7fhwu7oDeEXAMPLEPUBKEY8JX6tJc1KjmvZT": {
+    "blockchain": "solana",
+    "instance": "solana-testnet",
+    "rpc": "https://api.testnet.solana.com"
+  },
+  "263PLMyVYPesKfuiT76NysmnFvdmh3r6epc9A5Pwtimd": {
+    "blockchain": "solana",
+    "instance": "solana-local",
+    "rpc": "http://34.170.75.103:8899"
+  },
+  "GDA6XEWJHRZKP7N6XHWI2KGND2RW4M5K6MNUM2NAZ2SCG3H2Y6VPSBE4": {
+    "blockchain": "stellar",
+    "instance": "stellar-testnet",
+    "rpc": "https://horizon-testnet.stellar.org"
+  }
+}
+
