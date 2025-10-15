@@ -1,0 +1,26 @@
+name: wallet_frontend
+description: A simple Flutter wallet UI
+
+# Use correct Dart SDK constraint for Flutter 3.35.5
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  shared_preferences: ^2.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/NotoSans-Italic-VariableFont_wdth,wght.ttf
+        - asset: assets/fonts/NotoSans-VariableFont_wdth,wght.ttf
+          weight: 700
+

@@ -4,7 +4,7 @@
     "instance": "solana-devnet",
     "rpc": "https://api.devnet.solana.com"
   },
-  "7fhwu7oDeEXAMPLEPUBKEY8JX6tJc1KjmvZT": {
+  "4Nd1mYzLqJp1KXHbms1eJmEn3P7z3KSaAyhXkSSNMyyT": {
     "blockchain": "solana",
     "instance": "solana-testnet",
     "rpc": "https://api.testnet.solana.com"

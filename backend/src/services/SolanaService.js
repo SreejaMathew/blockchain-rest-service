@@ -1,37 +1,73 @@
 import fetch from "node-fetch";
 
-export async function getSolanaBalance(pubKey, rpcUrl) {
-  const payload = { jsonrpc: "2.0", id: 1, method: "getBalance", params: [pubKey] };
+/**
+ * Safe fetch with timeout and detailed error handling
+ */
+async function safeFetch(url, body, timeoutMs = 5000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-  const res = await fetch(rpcUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
 
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
+    clearTimeout(timeout);
 
-  return data.result ? data.result.value / 1e9 : 0;
+    if (!res.ok) {
+      console.error(`Fetch failed (${res.status}): ${res.statusText}`);
+      return null;
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === "AbortError") {
+      console.error(`Timeout: ${url} not reachable`);
+    } else {
+      console.error(`Fetch error for ${url}: ${err.message}`);
+    }
+    return null;
+  }
 }
 
-export async function getSolanaTransactions(pubKey, rpcUrl) {
-  const payload = {
+/**
+ * Get Solana account balance.
+ */
+export async function getSolanaBalance(walletAddress, rpc) {
+  const body = {
     jsonrpc: "2.0",
     id: 1,
-    method: "getSignaturesForAddress",
-    params: [pubKey, { limit: 10 }]
+    method: "getBalance",
+    params: [walletAddress],
   };
 
-  const res = await fetch(rpcUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  console.log(`Calling Solana RPC: ${rpc}`);
+  console.log(`Wallet: ${walletAddress}`);
 
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
+  const data = await safeFetch(rpc, body, 7000); // 7s timeout
 
-  return data.result || [];
+  if (!data) {
+    console.error(`No response from ${rpc}. Returning 0.`);
+    return 0;
+  }
+
+  if (data.error) {
+    console.error(`Solana RPC error: ${JSON.stringify(data.error)}`);
+    return 0;
+  }
+
+  if (data.result && typeof data.result.value === "number") {
+    console.log(data.result.value);
+    const sol = data.result.value / 1_000_000_000; // convert lamports → SOL
+    console.log(`Balance: ${sol} SOL`);
+    return sol;
+  }
+
+  console.warn("Unexpected response:", data);
+  return 0;
 }
-

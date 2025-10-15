@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "email": "alice@example.com",
+      "token": "Fk1hPp2uAqQZLzVt5DqTj1Cq8Ae4VZB6L3v3A7mP3aY9",
+      "balance": 1000
+    },
+    {
+      "email": "bob@example.com",
+      "token": "Gh2jLk3pQqQZLzVt5DqTj1Cq8Ae4VZB6L3v3A7mP3aX",
+      "balance": 500
+    }
+  ]
+}
