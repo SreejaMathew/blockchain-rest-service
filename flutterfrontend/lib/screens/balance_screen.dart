@@ -1,3 +1,5 @@
+// lib/screens/balance_screen.dart
+
 import 'package:flutter/material.dart';
 import '../models/balance_response.dart';
 import '../services/api_service.dart';
@@ -10,8 +12,8 @@ class BalanceScreen extends StatefulWidget {
 }
 
 class _BalanceScreenState extends State<BalanceScreen> {
-  BalanceResponse? balanceData;
-  bool loading = true;
+  BalanceResponse? balanceResponse;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -19,51 +21,58 @@ class _BalanceScreenState extends State<BalanceScreen> {
     _fetchBalances();
   }
 
+  // ✅ Fetch balances from API service
   Future<void> _fetchBalances() async {
-    final data = await ApiService.getBalances();
+    final response = await ApiService.getBalances();
     setState(() {
-      balanceData = data;
-      loading = false;
+      balanceResponse = response; // Already a BalanceResponse object
+      isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Your Balances')),
-      body: loading
+      appBar: AppBar(title: const Text('Account Balances')),
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : balanceData == null
-          ? const Center(child: Text('No data available'))
-          : _buildBalanceList(),
-    );
-  }
-
-  Widget _buildBalanceList() {
-    final balances = balanceData!.balances;
-    final tokens = balances.keys.toList();
-
-    if (tokens.isEmpty) {
-      return const Center(child: Text('No balances found.'));
-    }
-
-    return ListView.builder(
-      itemCount: tokens.length,
-      itemBuilder: (context, index) {
-        final token = tokens[index];
-        final value = balances[token];
-
-        return ListTile(
-          title: Text(token),
-          subtitle: Text('Balance: $value'),
-          trailing: const Icon(Icons.arrow_forward_ios),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Transactions for $token (coming soon)')),
-            );
-          },
-        );
-      },
+          : balanceResponse == null || balanceResponse!.accounts.isEmpty
+          ? const Center(child: Text('No balances found'))
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columns: const [
+                    DataColumn(label: Text('Token')),
+                    DataColumn(label: Text('Balance')),
+                    DataColumn(label: Text('RPC')),
+                    DataColumn(label: Text('Instance')),
+                    DataColumn(label: Text('Link')),
+                  ],
+                  rows: balanceResponse!.accounts.entries.map((entry) {
+                    final token = entry.key;
+                    final account = entry.value;
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(token)),
+                        DataCell(Text(account.balance.toString())),
+                        DataCell(Text(account.rpc)),
+                        DataCell(Text(account.instance)),
+                        DataCell(
+                          TextButton(
+                            onPressed: () {
+                              // TODO: Navigate to transactions page for this token
+                            },
+                            child: const Text('View'),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
     );
   }
 }

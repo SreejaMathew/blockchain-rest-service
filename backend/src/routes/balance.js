@@ -25,35 +25,45 @@ function authenticateToken(req, res, next) {
 router.get("/", authenticateToken, async (req, res) => {
   const email = req.user.email;
 
-  const userTokens = JSON.parse(fs.readFileSync("./backend/src/config/userTokens.json", "utf-8"));
-  const tokenMap = JSON.parse(fs.readFileSync("./backend/src/config/tokenMap.json", "utf-8"));
+  // Read user tokens and token map
+  const userTokens = JSON.parse(
+    fs.readFileSync("./backend/src/config/userTokens.json", "utf-8")
+  );
+  const tokenMap = JSON.parse(
+    fs.readFileSync("./backend/src/config/tokenMap.json", "utf-8")
+  );
 
   const tokens = userTokens[email];
   if (!tokens) return res.status(404).json({ error: "No tokens found for user" });
 
-  const balances = {};
+  const accounts = {};
+
   for (const token of tokens) {
     const meta = tokenMap[token];
-    console.log(meta);
-    console.log(token);
     if (!meta) continue;
 
-    if (meta.blockchain === "solana") {
-      balances[token] = await getSolanaBalance(token, meta.rpc);
-    } else if (meta.blockchain === "stellar") {
-      balances[token] = await getStellarBalance(token, meta.rpc);
+    let balance = 0;
+    try {
+      if (meta.blockchain === "solana") {
+        balance = await getSolanaBalance(token, meta.rpc);
+      } else if (meta.blockchain === "stellar") {
+        balance = await getStellarBalance(token, meta.rpc);
+      }
+    } catch (err) {
+      console.error(`Error fetching balance for ${token}:`, err);
+      balance = 0;
     }
+
+    // Add token to accounts in the requested format
+    accounts[token] = {
+      balance,
+      rpc: meta.rpc || "",
+      instance: meta.instance || "",
+    };
   }
 
-  res.json({ email, balances });
+  // Return final JSON
+  res.json({ email, accounts });
 });
 
 export default router;
-
-//curl -X POST "http://localhost:3000/balance" -H "Content-Type: application/json" -d "{\"email\":\"user1@example.com\",\"password\":\"mypassword\"}"
-
-//curl -X GET http://localhost:3000/balance -H "Authorization: Bearer "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQGV4YW1wbGUuY29tIiwiaWF0IjoxNzYwNDU3NjEwLCJleHAiOjE3NjA0NjEyMTB9.F-6iqScPUoXgshad8f-ECemTTdqtpor0NsjmfE1alGE"
-
-
-//curl -X GET http://localhost:3000/balance -H "Authorization: Bearer "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQGV4YW1wbGUuY29tIiwiaWF0IjoxNzYwNTAyMTkyLCJleHAiOjE3NjA1MDU3OTJ9.BMPumCqlKDY4GZ1GXRUY_VxEMyvJ-XjMubVyG8rx6VQ"
-
